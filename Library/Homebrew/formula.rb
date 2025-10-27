@@ -1785,7 +1785,7 @@ class Formula
 
   sig { returns(T.nilable(Formula)) }
   def current_installed_alias_target
-    Formulary.factory(T.must(full_installed_alias_name)) if installed_alias_path
+    Formulary.factory(T.must(full_installed_alias_name), prefer_stub: true) if installed_alias_path
   end
 
   # Has the target of the alias used to install this formula changed?
@@ -1814,6 +1814,38 @@ class Formula
   sig { returns(Formula) }
   def latest_formula
     installed_alias_target_changed? ? T.must(current_installed_alias_target) : Formulary.factory(full_name)
+  end
+  private :latest_formula
+
+  # sig { returns(T::Boolean) }
+  # def latest_alias_change_version_installed?
+  #   if core_formula? && Homebrew::EnvConfig.use_internal_api? && !installed_alias_target_changed?
+  #     # TODO: Custom logic
+  #   else
+  #     latest_formula.latest_version_installed?
+  #   end
+  # end
+
+  # If the alias has changed value, return the new formula's name.
+  # Otherwise, return self name.
+  sig { returns(String) }
+  def latest_name
+    if core_formula? && Homebrew::EnvConfig.use_internal_api? && !installed_alias_target_changed?
+      Homebrew::API::Internal.formula_stub(full_name).name
+    else
+      latest_formula.name
+    end
+  end
+
+  # If the alias has changed value, return the new formula's pkg_version.
+  # Otherwise, return self's pkg_version.
+  sig { returns(PkgVersion) }
+  def latest_pkg_version
+    if core_formula? && Homebrew::EnvConfig.use_internal_api? && !installed_alias_target_changed?
+      Homebrew::API::Internal.formula_stub(full_name).pkg_version
+    else
+      latest_formula.pkg_version
+    end
   end
 
   sig { returns(T::Array[Formula]) }

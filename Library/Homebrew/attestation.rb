@@ -98,7 +98,7 @@ module Homebrew
     # @api private
     sig { params(formulae: T::Array[Formula]).returns(T::Array[Formula]) }
     def self.sort_formulae_for_install(formulae)
-      if formulae.include?(Formula["gh"])
+      if formulae.map(&:full_name).include?("gh")
         [Formula["gh"]] | formulae
       else
         Homebrew::Attestation.gh_executable
